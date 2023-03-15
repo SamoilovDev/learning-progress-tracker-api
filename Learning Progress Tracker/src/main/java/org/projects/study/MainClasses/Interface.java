@@ -5,6 +5,7 @@ import org.projects.study.Data.Database;
 import org.projects.study.Data.Statistics;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public enum Interface {
 
@@ -15,7 +16,7 @@ public enum Interface {
                     To get information about commands enter 'help'
                     Write command:\040""");
 
-            return switch (INPUT.nextLine().trim()) {
+            return switch (INPUT.nextLine().trim().toLowerCase()) {
                 case ""             -> EMPTY_INPUT.select();
                 case "help"         -> HELP.select();
                 case "notify"       -> NOTIFY.select();
@@ -82,7 +83,7 @@ public enum Interface {
             while (true) {
                 String userRequest = INPUT.nextLine();
                 if (! DataValidation.isEnteredBack(userRequest, counter)) {
-                    List<String> studentCredentials = new ArrayList<>(List.of(userRequest.split(" ")));
+                    List<String> studentCredentials = List.of(userRequest.split(" "));
 
                     if (studentCredentials.size() >= 3) {
                         String email = studentCredentials.get(studentCredentials.size() - 1);
@@ -93,8 +94,7 @@ public enum Interface {
                             surname.append(studentCredentials.get(i)).append(" ");
                         }
 
-                        counter = DataValidation
-                                .checkAllData(name, surname.toString().trim(), email, counter);
+                        counter = DataValidation.checkAllData(name, surname.toString().trim(), email, counter);
                     } else {
                         System.out.println("Incorrect credentials.");
                     }
@@ -138,22 +138,20 @@ public enum Interface {
     NOTIFY {
         @Override
         protected Interface select() {
-            Set<Student> students = Database.studentsEndedCourses();
-            int count = 0;
+            AtomicInteger count = new AtomicInteger(0);
 
-            for (Student student : students) {
-                List<String> courses = Statistics.endedCourses(student);
-
-                for (String course : courses) {
-                    System.out.printf("""
+            Database.studentsEndedCourses().forEach(student -> {
+                Statistics.endedCourses(student).forEach(course -> System.out.printf(
+                        """
                             To: %s
                             Re: Your Learning Progress
                             Hello, %s %s! You have accomplished our %s course!
-                            """, student.getMAIL(), student.getNAME(), student.getSURNAME(), course);
-                }
-                count++;
-            }
-            System.out.printf("Total %d students have been notified.", count);
+                        """, student.getMail(), student.getName(), student.getSurname(), course)
+                );
+                count.incrementAndGet();
+            });
+
+            System.out.printf("Total %d students have been notified. ", count.get());
             return WAIT_FOR_INPUT.select();
         }
     },
@@ -163,10 +161,12 @@ public enum Interface {
         protected Interface select() {
             System.out.println("Type the name of a course to see details or 'back' to quit:");
 
-            Statistics.buildAndPrintStrings("Most popular: ",
-                    "Least popular: ", Statistics.getStudentsAtCourses());
-            Statistics.buildAndPrintStrings("Highest activity: ",
-                    "Lowest activity: ", Statistics.getActivityByCourses());
+            Statistics.buildAndPrintStrings(
+                    "Most popular: ", "Least popular: ", Statistics.getStudentsAtCourses()
+            );
+            Statistics.buildAndPrintStrings(
+                    "Highest activity: ", "Lowest activity: ", Statistics.ACTIVITY_BY_COURSES
+            );
             Statistics.easiestAndHardest();
 
             while (true) {
@@ -214,25 +214,17 @@ public enum Interface {
     protected abstract Interface select();
 
     private static List<Integer> integersInInput(List<String> stringUserID) {
-        LinkedList<Integer> points = new LinkedList<>(); // [Java, DSA, Databases, Spring]
-
-        for (String s : stringUserID) {
-            try {
-                points.add(Integer.parseInt(s));
-            } catch (Exception ignored) {
-            }
-        }
-
-        return points;
+        return stringUserID.stream()
+                .map(Integer::parseInt)
+                .toList();
     }
 
     private static void printResultOfAdding(List<Integer> points, List<String> stringUserID, int userID, String user) {
-
-        if (! points.get(points.size() - 1).toString().equals(stringUserID.get(stringUserID.size() - 1)) ||
-                points.size() != 4 || Collections.min(points) < 0) {
+        if (! points.get(points.size() - 1).toString().equals(stringUserID.get(stringUserID.size() - 1))
+                || points.size() != 4
+                || Collections.min(points) < 0) {
             System.out.println("Incorrect points format.");
-        } else if (userID < 10000 ||
-                ! Database.isIDTaken(points.get(0), points.get(1), points.get(2), points.get(3), userID)) {
+        } else if (userID < 10000 || ! Database.isIdTaken(points, userID)) {
             System.out.printf("No student is found for id=%s.%n", user);
         }  else {
             System.out.println("Points updated.");

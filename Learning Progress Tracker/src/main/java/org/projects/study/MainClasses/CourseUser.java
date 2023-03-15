@@ -1,41 +1,31 @@
 package org.projects.study.MainClasses;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
 
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class CourseUser implements Comparable<CourseUser> {
 
-    private final int ID;
+    private int id;
 
-    private final int points;
+    private int points;
 
-    private final double percent;
-
-    public CourseUser(int ID, int points, double percent) {
-        this.ID = ID;
-        this.points = points;
-        this.percent = percent;
-    }
-
-    public int getID() {
-        return ID;
-    }
-
-    public int getPoints() {
-        return points;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%d\t%d\t\t%.1f%%", this.ID, this.points, this.percent);
-    }
+    private double percent;
 
     @Override
     public int compareTo(@NotNull CourseUser otherUser) {
         return Comparator.comparing(CourseUser::getPoints)
                 .reversed()
-                .thenComparing(CourseUser::getID)
+                .thenComparing(CourseUser::getId)
                 .compare(this, otherUser);
     }
+
 }

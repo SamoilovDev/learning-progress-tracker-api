@@ -47,14 +47,14 @@ class LearningProgramTest {
     @ValueSource(strings = {"anny.md@mail", "ma@ma1@2.3"})
     @DisplayName("Check wrong mails for validity")
     void badMail(@NotNull String input) {
-        assertFalse(DataValidation.checkMailByValid(input));
+        assertFalse(input.matches("^[\\w.]+@\\w+\\.\\w+$"));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"anny.md@mail.edu", "mama1@2.3"})
     @DisplayName("Check correct mails for validity")
     void goodMail(@NotNull String input) {
-        assertTrue(DataValidation.checkMailByValid(input));
+        assertTrue(input.matches("^[\\w.]+@\\w+\\.\\w+$"));
     }
 
     @ParameterizedTest

@@ -1,7 +1,5 @@
 package org.projects.study.Data;
 
-import java.util.regex.Pattern;
-
 public class DataValidation {
 
     public static boolean isEnteredBack(String userRequest, int counter) {
@@ -12,29 +10,16 @@ public class DataValidation {
     }
 
     public static boolean checkByPattern(String expression) {
-        Pattern pattern = Pattern
-                .compile("[a-zA-Z]+([ '\\-]*[a-zA-Z]*)*");
-        Pattern patternNot = Pattern
-                .compile("(\\w*''\\w*)|(\\w*-'\\w*)|(\\w*'-\\w*)|(\\w*--\\w*)|('\\w)|(\\w+')|(-\\w)|(\\w+-)");
-        return !patternNot.matcher(expression).matches() && pattern.matcher(expression).matches();
-    }
-
-    public static boolean checkMailByValid(String mail) {
-        Pattern pattern = Pattern.compile("[\\w.]+@\\w+\\.\\w+");
-        return pattern.matcher(mail).matches();
+        return ! expression.matches("^(\\w*''\\w*)|(\\w*-'\\w*)|(\\w*'-\\w*)|(\\w*--\\w*)|('\\w)|(\\w+')|(-\\w)|(\\w+-)$")
+                && expression.matches("^[a-zA-Z]+([ '\\-]*[a-zA-Z]*)*$");
     }
 
     public static int checkAllData(String name, String surname, String mail, int count) {
-
-        if (! checkMailByValid(mail)) {
+        if (! mail.matches("^[\\w.]+@\\w+\\.\\w+$")) {
             System.out.println("Incorrect email.");
-            return count;
         } else if (Database.isMailTaken(mail)) {
             System.out.println("This email is already taken.");
-            return count;
-        }
-
-        if (! checkByPattern(name) || name.length() < 2) {
+        } else if (! checkByPattern(name) || name.length() < 2) {
             System.out.println("Incorrect first name.");
         } else if (! checkByPattern(surname) || surname.length() < 2) {
             System.out.println("Incorrect last name.");

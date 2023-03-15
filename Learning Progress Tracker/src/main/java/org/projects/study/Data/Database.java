@@ -3,57 +3,57 @@ package org.projects.study.Data;
 import org.projects.study.MainClasses.Student;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Database {
-    private static int ID = 10000;
+    private static int id = 10000;
 
-    public static final HashMap<String, Student> DATABASE = new HashMap<>();
+    public static final Map<String, Student> DATABASE = new HashMap<>();
 
     public static void addStudent(String name, String surname, String mail) {
-        Student student = new Student(name, surname, mail, ID);
-        ID++;
+        Student student = Student.builder()
+                .name(name)
+                .surname(surname)
+                .mail(mail)
+                .id(id++)
+                .build();
         DATABASE.put(mail, student);
     }
 
     public static boolean isMailTaken(String mail) {
-        for (String takenMail : DATABASE.keySet()) {
-            if (mail.equals(takenMail)) return true;
-        }
-        return false;
+        return DATABASE.containsKey(mail);
     }
 
-    public static boolean isIDTaken(int java, int DSA, int Databases, int Spring, int id) {
-        for (Student student : DATABASE.values()) {
-            if (student.getID() == id) {
-                if (java > 0) {
-                    student.addPointsJava(java);
-                    Statistics.addActivity(0);
-                }
-                if (DSA > 0) {
-                    student.addPointsDSA(DSA);
-                    Statistics.addActivity(1);
-                }
-                if (Databases > 0) {
-                    student.addPointsDatabases(Databases);
-                    Statistics.addActivity(2);
-                }
-                if (Spring > 0) {
-                    student.addPointsSpring(Spring);
-                    Statistics.addActivity(3);
-                }
-                return true;
+    public static boolean isIdTaken(List<Integer> points, int id) {
+        List<Student> studentList = DATABASE.values()
+                .stream()
+                .filter(student -> student.getId() == id)
+                .toList();
+
+        if (studentList.isEmpty()) return false;
+
+        IntStream.range(0, 4).filter(i -> points.get(i) > 0).forEach(i -> {
+            switch (i) {
+                case 0 -> studentList.get(0).addPointsJava(points.get(i));
+                case 1 -> studentList.get(0).addPointsDSA(points.get(i));
+                case 2 -> studentList.get(0).addPointsDatabases(points.get(i));
+                case 3 ->studentList.get(0).addPointsSpring(points.get(i));
             }
-        }
-        return false;
+            Statistics.ACTIVITY_BY_COURSES.add(i);
+        });
+        return true;
     }
 
-    public static ArrayList<Integer> findByID(int id) {
-        for (Student student : DATABASE.values()) {
-            if (student.getID() == id) {
-                return student.getPointsByArrayList();
-            }
-        }
-        return new ArrayList<>(List.of(-1));
+    public static List<Integer> findByID(int id) {
+        List<Student> studentList = DATABASE.values()
+                .stream()
+                .filter(student -> student.getId() == id)
+                .toList();
+
+        return studentList.isEmpty()
+                ? List.of(-1)
+                : studentList.get(0).getPointsByArrayList();
     }
 
     public static void studentList() {
@@ -69,14 +69,11 @@ public class Database {
     }
 
     public static Set<Student> studentsEndedCourses() {
-        Set<Student> students = new LinkedHashSet<>();
-
-        for (Student student : DATABASE.values()) {
-            List<Integer> points = student.getPointsByArrayList();
-            for (int i = 0; i < points.size(); i++) {
-                if (Objects.equals(points.get(i), Statistics.MAX_VALUES.get(i))) students.add(student);
-            }
-        }
-        return students;
+        return DATABASE.values().stream()
+                .filter(student -> student.getPointsJava() == Statistics.MAX_VALUES.get(0))
+                .filter(student -> student.getPointsDSA() == Statistics.MAX_VALUES.get(1))
+                .filter(student -> student.getPointsDatabases() == Statistics.MAX_VALUES.get(2))
+                .filter(student -> student.getPointsSpring() == Statistics.MAX_VALUES.get(3))
+                .collect(Collectors.toSet());
     }
 }

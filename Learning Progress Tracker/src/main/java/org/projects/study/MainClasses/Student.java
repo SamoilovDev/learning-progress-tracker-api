@@ -1,52 +1,40 @@
 package org.projects.study.MainClasses;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Student implements Comparable<Student> {
 
-    private final String NAME;
+    private int id;
 
-    private final String SURNAME;
+    private String name;
 
-    private final String MAIL;
+    private String surname;
 
-    private final int ID;
+    private String mail;
 
+    @Builder.Default
     private int pointsJava = 0;
 
+    @Builder.Default
     private int pointsDSA = 0;
 
+    @Builder.Default
     private int pointsDatabases = 0;
 
+    @Builder.Default
     private int pointsSpring = 0;
-
-    public Student(String name, String surname, String mail, int ID) {
-        this.NAME = name;
-        this.SURNAME = surname;
-        this.MAIL = mail;
-        this.ID = ID;
-    }
-
-    public int getID() {
-        return ID;
-    }
-
-    public String getNAME() {
-        return NAME;
-    }
-
-    public String getSURNAME() {
-        return SURNAME;
-    }
-
-    public String getMAIL() {
-        return MAIL;
-    }
 
     public void addPointsJava(int points) {
         this.pointsJava += points;
@@ -74,26 +62,8 @@ public class Student implements Comparable<Student> {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Student student = (Student) o;
-        return ID == student.ID && NAME.equals(student.NAME) && SURNAME.equals(student.SURNAME);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(NAME, SURNAME, ID);
-    }
-
-    @Override
-    public String toString() {
-        return this.NAME + " " + this.SURNAME + " " + this.ID;
-    }
-
-    @Override
     public int compareTo(@NotNull Student otherStudent) {
-        return Comparator.comparing(Student::getID).compare(this, otherStudent);
+        return Comparator.comparing(Student::getId).compare(this, otherStudent);
     }
 
     public ArrayList<Integer> getPointsByArrayList() {
